@@ -6,7 +6,7 @@ let cookies = parseCookies();
 let isRefreshing = false;
 let failedRequestsQueue = [];
 
-interface LoginResponse extends AxiosError  {
+interface LoginResponse extends AxiosError {
   code: string;
 }
 
@@ -19,8 +19,8 @@ export const api = axios.create({
 
 api.interceptors.response.use(response => {
   return response;
-}, (error : AxiosError<LoginResponse>) => {
- 
+}, (error: AxiosError<LoginResponse>) => {
+
   if (error.response.status === 401) {
     if (error.response.data?.code === 'token.expired') {
       cookies = parseCookies();
@@ -30,21 +30,21 @@ api.interceptors.response.use(response => {
 
       if (!isRefreshing) {
         isRefreshing = true;
-        
+
         api.post('/refresh', { refreshToken }).then(response => {
-        const { token } = response.data
-        
-         setCookie(undefined, "nextauth.token", token, {
-          maxAge: 60 * 60 * 24 * 30, //30 dias
-          path: "/",
-        });
-        setCookie(undefined, "nextauth.refreshToken", response.data.refreshToken, {
-          maxAge: 60 * 60 * 24 * 30, //30 dias
-          path: "/",
-        });
+          const { token } = response.data
+
+          setCookie(undefined, "nextauth.token", token, {
+            maxAge: 60 * 60 * 24 * 30, //30 dias
+            path: "/",
+          });
+          setCookie(undefined, "nextauth.refreshToken", response.data.refreshToken, {
+            maxAge: 60 * 60 * 24 * 30, //30 dias
+            path: "/",
+          });
 
           api.defaults.headers["Authorization"] = `Bearer ${token}`;
-          
+
           failedRequestsQueue.forEach(request => request.onSuccess(token))
           failedRequestsQueue = []
         }).catch(err => {
@@ -53,7 +53,7 @@ api.interceptors.response.use(response => {
         }).finally(() => {
           isRefreshing = false;
         })
-      } 
+      }
 
       return new Promise((resolve, reject) => {
         failedRequestsQueue.push({
@@ -61,7 +61,7 @@ api.interceptors.response.use(response => {
             originalConfig.headers['Authorization'] = `Bearer ${token}`
 
             resolve(api(originalConfig));
-          } ,
+          },
           onFailure: (err: AxiosError) => {
             reject(err);
           },
