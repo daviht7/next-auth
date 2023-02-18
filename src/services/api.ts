@@ -1,6 +1,7 @@
 import { signOut } from "@/contexts/AuthContext";
 import axios, { AxiosError } from "axios";
 import { parseCookies, setCookie } from "nookies";
+import { AuthTokenError } from "./errors/AuthTokenError";
 
 
 let isRefreshing = false;
@@ -25,6 +26,8 @@ export function setupApiClient(ctx = undefined) {
   api.interceptors.response.use(response => {
     return response;
   }, (error: AxiosError<LoginResponse>) => {
+
+    console.log("error", error)
 
     if (error.response.status === 401) {
       if (error.response.data?.code === 'token.expired') {
@@ -57,6 +60,8 @@ export function setupApiClient(ctx = undefined) {
             failedRequestsQueue = []
             if (typeof window === 'object') {
               signOut();
+            } else {
+              return Promise.reject(new AuthTokenError());
             }
 
           }).finally(() => {
@@ -80,6 +85,8 @@ export function setupApiClient(ctx = undefined) {
       } else {
         if (typeof window === 'object') {
           signOut();
+        } else {
+          return Promise.reject(new AuthTokenError());
         }
       }
     }
