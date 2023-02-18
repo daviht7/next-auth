@@ -1,3 +1,4 @@
+import { Can } from "@/components/Can";
 import { useCan } from "@/hooks/useCan";
 import { withSSRAuth } from "@/utils/withSSRAuth";
 import { useContext, useEffect } from "react";
@@ -6,10 +7,6 @@ import { setupApiClient } from "../services/api";
 
 export default function Dashboard() {
   const { user } = useContext(AuthContext);
-
-  const userCanSeeMetrics = useCan({
-    permissions: ["metrics.list", "administrator"],
-  });
 
   useEffect(() => {
     /*api
@@ -25,7 +22,10 @@ export default function Dashboard() {
   return (
     <>
       <h1>DASHBOARD : {user?.email}</h1>
-      {userCanSeeMetrics && <div>metrics</div>}
+
+      <Can permissions={["editor"]}>
+        <div>metrics</div>
+      </Can>
     </>
   );
 }
